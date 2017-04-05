@@ -4,17 +4,29 @@ class HVLiveMigration
     [DscProperty(Key)]
     [System.UInt32]$MigrationThreshold
 
+    [DscProperty(Mandatory)]
+    [bool]$Enabled
+
     [void] Set()
     {
-        Set-VMHost -MaximumVirtualMachineMigrations $this.MigrationThreshold
+        if ($this.Enabled -eq $true)
+        {
+            Enable-VMMigration
+            Set-VMHost -MaximumVirtualMachineMigrations $this.MigrationThreshold
+        }
+        else
+        {
+            Disable-VMMigration
+        }   
+        
     }
 
 
     [bool] Test() 
     {
-        $LiveMigrationTheshold = Get-VMHost | Select-Object -ExpandProperty MaximumVirtualMachineMigrations
+        $LiveMigrationTheshold = (Get-VMHost).MaximumVirtualMachineMigrations
 
-        if ($LiveMigrationTheshold -eq $this.MigrationThreshold) 
+        if (($LiveMigrationTheshold -eq $this.MigrationThreshold) -and (Get-VMHost).virtualmachinemigrationenabled -eq $this.Enabled)
         {
             Write-Verbose ("Live migration threshold is correct, setting is: " + $LiveMigrationTheshold)
             return $True
@@ -29,7 +41,8 @@ class HVLiveMigration
     [HVLiveMigration] Get()
     {
         $ReturnValue = @{
-                    MigrationThreshold = Get-VMHost | Select-Object -ExpandProperty MaximumVirtualMachineMigrations
+                    MigrationThreshold = (Get-VMHost).MaximumVirtualMachineMigrations
+                    Enabled = (Get-VMHost).virtualmachinemigrationenabled
                     }
 
         return $ReturnValue
