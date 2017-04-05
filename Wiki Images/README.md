@@ -1,0 +1,1 @@
+Storage for Wiki images
