@@ -1,22 +1,12 @@
-enum Ensure 
-{
-    Present
-    Absent
-}
-
 [DscResource()]
-
 class HVLiveMigration 
 {
-[DscProperty(Key)]
-[Ensure]$Ensure
-
-[DscProperty(Mandatory)]
-[System.UInt32]$MigrationThreshold
+    [DscProperty(Key)]
+    [System.UInt32]$MigrationThreshold
 
     [void] Set()
     {
-        Set-VMHost -MaximumVirtualMachineMigrations 5
+        Set-VMHost -MaximumVirtualMachineMigrations $this.MigrationThreshold
     }
 
 
@@ -24,7 +14,7 @@ class HVLiveMigration
     {
         $LiveMigrationTheshold = Get-VMHost | Select-Object -ExpandProperty MaximumVirtualMachineMigrations
 
-        if ($LiveMigrationTheshold -eq 5) 
+        if ($LiveMigrationTheshold -eq $this.MigrationThreshold) 
         {
             Write-Verbose ("Live migration threshold is correct, setting is: " + $LiveMigrationTheshold)
             return $True
