@@ -1,0 +1,105 @@
+[DscResource()]
+class BcVMQConfig
+{
+    [DscProperty(Key)]
+    [string]$Interface
+
+    [DscProperty(Mandatory)]
+    [System.UInt32]$BaseProcessorNumber
+
+    [DscProperty(Mandatory)]
+    [System.UInt32]$MaxProcessors
+    
+    [DscProperty(Mandatory)]
+    [System.UInt32]$MaxProcessorNumber
+
+    [void] Set()
+    {
+        $SetVmqArgs = @{Name = $this.Interface
+                        BaseProcessorNumber = $this.BaseProcessorNumber
+                        MaxProcessors = $this.MaxProcessors
+                        MaxProcessorNumber = $this.MaxProcessorNumber}
+
+        try {
+
+        Set-NetAdapterVmq @SetVmqArgs
+
+        }
+        catch {
+
+        Write-Verbose "Failed to set VMQ settings on: $($this.Interface)"
+        #If this is a void method should I even be returning an error object?
+        $Error[0].Exception.Message
+
+        }
+    }
+
+
+    [bool] Test() 
+    {
+        $Compliant = $True
+        
+        $InterfaceConfig = Get-NetAdapterVmq -Name "$this.Interface"
+
+        if ($InterfaceConfig.Interface -eq (Get-NetAdapterVmq -Name $InterfaceConfig).Name) 
+        {
+            $Compliant = $True
+
+            if ($InterfaceConfig.BaseProcessorNumber -eq (Get-NetAdapterVmq -Name $InterfaceConfig).BaseProcessorNumber) 
+            {
+                $Compliant = $True
+
+                if ($InterfaceConfig.MaxProcessors -eq (Get-NetAdapterVmq -Name $InterfaceConfig).MaxProcessors) 
+                {
+                    $Compliant = $True
+
+                    if ($InterfaceConfig.MaxProcessorNumber -eq (Get-NetAdapterVmq -Name $InterfaceConfig).MaxProcessorNumber) 
+                    {
+                        $Compliant = $True    
+                    }
+                    else
+                    {
+                        $Compliant = $False
+                    }
+                }
+                else
+                {
+                    $Compliant = $False
+                }
+            }
+            else 
+            {
+                $Compliant = $False
+            }
+        } 
+        else 
+        {
+            $Compliant = $False
+        }
+
+
+
+        if ($Compliant -eq $True) 
+        {
+            return $True
+        }
+        else #($Compliant -eq $False) 
+        {
+            return $False
+        }
+
+    }
+
+    [BcVMQConfig] Get()
+    {
+        $InterfaceConfig = Get-NetAdapterVmq -Name "$this.Interface"
+
+        $ReturnValue = @{Interface = $InterfaceConfig.name
+                         BaseProcessorNumber = $InterfaceConfig.BaseProcessorNumber
+                         MaxProcessors = $InterfaceConfig.MaxProcessors
+                         MaxProcessorNumber = $InterfaceConfig.MaxProcessorNumber}
+
+        return $ReturnValue
+    }
+
+}
