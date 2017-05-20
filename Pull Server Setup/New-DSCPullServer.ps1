@@ -19,7 +19,7 @@
 Set-Location 'Cert:\LocalMachine\My'
 #$Cert = Get-Certificate -Template "WebServer" -Url ldap:///CN=blue-sca-1 -DnsName brl-dscpull.bluecrest.local -CertStoreLocation Cert:\LocalMachine\My
 #$Thumbprint = $Cert.Certificate.Thumbprint
-$Thumbprint = (Get-ChildItem .\ | Where-Object {$_.DnsNameList.Unicode -like 'brl-dscpull*'}).Thumbprint
+$Thumbprint = (Get-ChildItem .\ | Where-Object {$_.DnsNameList.Unicode -like 'dsc-server*'}).Thumbprint
 
 
 
@@ -102,7 +102,7 @@ Start-DscConfiguration -Path c:\Configs\PullServer -Wait -Verbose -Force
 
 Get-Website psdscpullserver
 
-Invoke-WebRequest -Uri https://brl-dscpull.bluecrest.local:8080/psdscpullserver.svc
+Invoke-WebRequest -Uri https://dsc-server.bluecrest.local:8080/psdscpullserver.svc
 
 
 
